@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from astropy.table import table
+from astropy.io import fits
 import galsim
 
 def DrawGal(stamp_size = 50,
