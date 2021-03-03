@@ -13,34 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tensorflow-GalSim Universe (TenGU)."""
+
 
 
 import galsim
 import tensorflow as tf
 import tensorflow_datasets as tfds
+import numpy as np
 
-_CITATION = r"""
-@misc{Dua:2019 ,
-author = "VLRG ",
-year = "2017",
-title = "CosmoStat",
-url = "http://cosmostat.org",
-institution = "CEA IRFU/DAp" }
-@article{autometacal,
-  title={TBD,
-  author={TBD,
-  year={2021},
-  publisher={TBD}
-}
-"""
 
-_DESCRIPTION = """
-This is a galaxy image generator that takes shape parameters and creates synthetic images with labels
-corresponding to these shape parameters.
-"""
+_DESCRIPTION = """Tensorflow-GalSim Universe (TenGU)."""
 
-_URL = 'https://github.com/CosmoStat/autometacal'
+_URL = 'https://github.com/andrevitorelli/TenGU'
 
 _INPUTS = ['g1','g2','r0','snr']
 
@@ -94,7 +78,7 @@ class GalGen(tfds.core.GeneratorBasedBuilder):
                                             'features':  tfds.features.Image(shape=(stamp_size,stamp_size,channels))}
                                             ),
                                     supervised_keys=None,
-                                    homepage='https://github.com/CosmoStat/autometacal',
+                                    homepage=_URL,
                                     citation=_CITATION
                                     )
 
@@ -117,4 +101,4 @@ class GalGen(tfds.core.GeneratorBasedBuilder):
         for i, galaxy in enumerate(data):
             image = DrawSimpleGalaxy(galaxy)
 
-            yield i, image
+            yield i, g1, g2, image
