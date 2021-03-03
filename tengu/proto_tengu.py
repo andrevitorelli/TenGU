@@ -1,68 +1,120 @@
-import os
-import numpy as np
+# coding=utf-8
+# Copyright 2021 The TensorFlow Datasets Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Tensorflow-GalSim Universe (TenGU)."""
+
+
+import galsim
 import tensorflow as tf
 import tensorflow_datasets as tfds
-from astropy.table import table
-from astropy.io import fits
-import galsim
 
-def DrawGal(stamp_size = 50,
-            gal_r0 = 1.0,            # arcsec
-            g1=0,g2=0,
-            snr=200,
-            psf = None):
-    gal = galsim.Exponential(flux=1, scale_radius=gal_r0)
+_CITATION = r"""
+@misc{Dua:2019 ,
+author = "VLRG ",
+year = "2017",
+title = "CosmoStat",
+url = "http://cosmostat.org",
+institution = "CEA IRFU/DAp" }
+@article{autometacal,
+  title={TBD,
+  author={TBD,
+  year={2021},
+  publisher={TBD}
+}
+"""
+
+_DESCRIPTION = """
+This is a galaxy image generator that takes shape parameters and creates synthetic images with labels
+corresponding to these shape parameters.
+"""
+
+_URL = 'https://github.com/CosmoStat/autometacal'
+
+_INPUTS = ['g1','g2','r0','snr']
+
+_STAMP_SIZE=50
+
+def DrawSimpleGalaxy(galaxy,psf=None,**kwargs):
+    defaults = {
+    'flux'         : 1,
+    'method'       : "no_pixel",
+    'stamp_size'   : _STAMP_SIZE,
+    'scale'        : 0.2,
+    'interpolator' : "linear"
+    }
+    defaults.update(kwargs)
+
+    g1, g2, r0, snr = galaxy
+
+    gal = galsim.Exponential(flux=1, scale_radius=r0)
     gal = gal.shear(g1=g1, g2=g2)
     if psf is not None:
         gal = galsim.Convolve([gal,psf])
-    gal_image = gal.drawImage(nx=stamp_size,ny=stamp_size, scale=pixel_scale, method='no_pixel')
+    gal_image = gal.drawImage(nx=defaults['stamp_size'],
+                              ny=defaults['stamp_size'], scale=.2, method=defaults['method'])
     noise = galsim.GaussianNoise()
     gal_image.addNoiseSNR(noise,snr)
-    return gal_image
+    return gal_image.array
 
-class InverseCat:
-    
-    def __init__(self,cat,**kwargs):
-        self.defaults =  {'stamp_size' : 50,
-                    'gal_flux' : 1,
-                    'interpolator' : 'linear',
-            
-        }    
-        self.defaults.update(kwargs)
-        
-        self.table = Table.read(cat)
-        self.location = cat
-        self.size = len(self.table)
-        self.psfs = [None for i in range(self.size)]
-        return print("Catalog loaded")
-       
-    def create_psfs(self,psfs=None,**kwargs):
-        default =  {'beta' : 4.8,
-                    'radius' : 1,
+def DrawMoffatPSF(**kwargs):
+    defaults = {
+    'beta': 4.8,
+    'radius' : 1,
+    'interpolator': "linear"
+    }
+    defaults.update(kwargs)
+    return galsim.Moffat(beta=defaults['beta'],half_light_radius=defaults['radius'])
+
+def PSFs_from_img(img):
+    return galsim.InterpolatedImage(img,x_interpolant=defaults['interpolator'])
+
+
+class GalGen(tfds.core.GeneratorBasedBuilder):
+    """Regression task aimed to predict the shear of galaxy images."""
+    VERSION = tfds.core.Version('0.0.0')
+
+    def _info(self):
+        stamp_size = _STAMP_SIZE
+        channels = 1
+        return tfds.core.DatasetInfo(builder=self,
+                                    description=_DESCRIPTION,
+                                    features=tfds.features.FeaturesDict({
+                                            'features':  tfds.features.Image(shape=(stamp_size,stamp_size,channels))}
+                                            ),
+                                    supervised_keys=None,
+                                    homepage='https://github.com/CosmoStat/autometacal',
+                                    citation=_CITATION
+                                    )
+
+    def _split_generators(self, cat,train_split=.7):
+        """Returns SplitGenerators."""
+        data = Table.read(cat)[_INPUTS]
+        intsplit = int(np.round(len(data)*train_split))
+        train_slice = np.random.choice(np.arange(len(data)),intsplit,replace=False)
+        test_slice = [i for i in np.arange(len(data))]
+        _ = [test_slice.remove(train_selected) for train_selected in train_slice]
+
+        return {
+        'train': self._generate_examples(data[train_slice]),
+        'test': self._generate_examples(data[test_slice]),
         }
-        default.update(kwargs)
-        if psfs == None:
-            self.psfs = [galsim.Moffat(beta=default['beta'],half_light_radius=default['radius']) for i in range(self.size)]
-        else:
-            self.psfs = [galsim.InterpolatedImage(psf,x_interpolant=self.defaults['interpolator']) for psf in psfs]
-        return print("PSFs created")
-            
-            
-    def _DrawGalaxy(self,galaxy,psf=None):
-        g1, g2, r0, snr = galaxy['g1','g2','r0','snr']
-        gal_img=DrawGal(stamp_size = self.defaults['stamp_size'],
-            gal_r0 = r0,            # arcsec
-            g1=g1, g2=g2,
-            snr=snr,
-            psf = psf)
-        return gal_img
-       
-    def draw_galaxies(self):
-        gal_images = [self._DrawGalaxy(galaxy,psf).array for galaxy,psf in zip(self.table,self.psfs)]
-        self.table['images'] = gal_images
-        return print('Galaxy images generated.')
-        
-    def write_images(self,location):
-        for n, image in enumerate(self.table['images']):
-            fits.writeto(location+f'gal_img_{n}.fits',image,overwrite=True)  
-        return print(f'{self.size} images written.')
+
+    def _generate_examples(self, data):
+        """Yields examples."""
+
+        for i, galaxy in enumerate(data):
+            image = DrawSimpleGalaxy(galaxy)
+
+            yield i, image
