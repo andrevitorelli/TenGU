@@ -30,7 +30,7 @@ class GalGen(tfds.core.GeneratorBasedBuilder):
 
   def _split_generators(self,dl):
     """Returns generators according to split."""
-    dl_path = dl.download(_URL + "data/test.fits" )
+    dl_path = dl.download(_URL + "tree/main/data/test.fits" )
     data = Table.read(dl_path / "test.fits")
     intsplit = int(np.round(len(data)*0.7))
     train_slice = np.random.choice(np.arange(len(data)),intsplit,replace=False)
