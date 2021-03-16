@@ -1,2 +1,2 @@
 __version__ ='0.0.0'
-from . import proto_tengu, galdraw
+from . import tfgs, galsim_cosmos
