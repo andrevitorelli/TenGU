@@ -23,27 +23,24 @@ class GalGen(tfds.core.GeneratorBasedBuilder):
       description=_DESCRIPTION,
       homepage=_URL,
       features=tfds.features.FeaturesDict({
-          'image': tfds.features.Tensor(shape=[50,50], dtype=tf.float32)
+          'image': tfds.features.Tensor(shape=[50,50], dtype=tf.float32),
+          'label': tfds.features.Tensor(shape=[2], dtype=tf.float32)
           }),
-      supervised_keys=("image","image"),
+      supervised_keys=("image","label"),
    citation=_CITATION)
 
   def _split_generators(self,dl):
     """Returns generators according to split."""
-    dl_path = dl.download(_URL + "tree/main/data/test.fits" )
-    data = Table.read(dl_path / "test.fits")
-    intsplit = int(np.round(len(data)*0.7))
-    train_slice = np.random.choice(np.arange(len(data)),intsplit,replace=False)
-    test_slice = [i for i in np.arange(len(data))]
-    _ = [test_slice.remove(train_selected) for train_selected in train_slice]
-    return {'train': self._generate_examples(data[train_slice]),
-             'test': self._generate_examples(data[test_slice]),
-             }
+    dl_path = dl.download(_URL+"raw/main/data/test.fits" )
+    data = Table.read(str(dl_path))
+
+    return {tfds.Split.TRAIN: self._generate_examples(data)}
 
   def _generate_examples(self, data):
     """Yields examples."""
     for i, galaxy in enumerate(data):
       image = draw_gal_noise(galaxy,None).astype("float32")
-      g1, g2 = galaxy['g1'], galaxy['g2']
+      label = np.array([galaxy['g1'], galaxy['g2']],dtype="float32" )
 
-      yield '%d'%i, {'image': image}
+      yield '%d'%i, {'image': image,
+                     'label': label }
