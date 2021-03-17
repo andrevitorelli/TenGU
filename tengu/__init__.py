@@ -1,2 +1,4 @@
-__version__ ='0.0.0'
-from . import tfgs, galsim_cosmos
+"""tengu dataset."""
+
+from .tengu import TenGU
+from .galaxies import *
