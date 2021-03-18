@@ -12,7 +12,7 @@ _CITATION = """{needed}
 """
 
 
-class GalsimCosmos(tfds.core.GeneratorBasedBuilder):
+class COSMOSDataset(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for galsim_cosmos dataset."""
 
   VERSION = tfds.core.Version('1.0.0')

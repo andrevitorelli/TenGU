@@ -3,8 +3,17 @@ import galsim
 def exp_model(galaxy):
   gal = galsim.Exponential(flux=galaxy['flux'] , half_light_radius=galaxy['re'])
   return gal
+
+def moffat_psf(g1,g2,**kwargs):
+  defaults = {
+    'beta'  : 4.765,
+    'fwhm'  : 1}
+  defaults.update(kwargs)
+  psf = galsim.Moffat(beta=defaults['beta'], half_light_radius=defaults['fwhm'])
+  return psf
+
 def draw_gal_noise(galaxy,
-                   psf = None ,
+                   psf = moffat_psf(0.01,-0.02),
                    model=exp_model,**kwargs):
   defaults = {
   'pixel_scale'  : 0.2,

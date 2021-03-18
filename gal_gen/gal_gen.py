@@ -1,17 +1,16 @@
-"""GalGen dataset."""
-from astropy.table import Table
+"""gal_gen dataset."""
 import tensorflow_datasets as tfds
 import tensorflow as tf
 import numpy as np
 import galsim
-from galaxies import exp_model, draw_gal_noise
-_DESCRIPTION = "Toy Galaxies for simple proofs-of-concepts."
+from galaxies import generate_galaxy
+_DESCRIPTION = "Tensorflow-GalSim Universe: Toy Galaxies for simple proofs-of-concepts."
 _CITATION = "{NEEDED}"
 _URL = "https://github.com/andrevitorelli/TenGU/"
 
 
 class GalGen(tfds.core.GeneratorBasedBuilder):
-  """Simple Galaxy Image Generator for Tensorflow Operations."""
+  """Random galaxy image generator."""
 
   VERSION = tfds.core.Version('0.0.0')
   RELEASE_NOTES = {'0.0.0': "Initial code."}
@@ -31,16 +30,14 @@ class GalGen(tfds.core.GeneratorBasedBuilder):
 
   def _split_generators(self,dl):
     """Returns generators according to split."""
-    dl_path = dl.download(_URL+"raw/main/data/test.fits" )
-    data = Table.read(str(dl_path))
+    return {tfds.Split.TRAIN: self._generate_examples()}
 
-    return {tfds.Split.TRAIN: self._generate_examples(data)}
-
-  def _generate_examples(self, data):
+  def _generate_examples(self):
     """Yields examples."""
-    for i, galaxy in enumerate(data):
-      image = draw_gal_noise(galaxy,None).astype("float32")
-      label = np.array([galaxy['g1'], galaxy['g2']],dtype="float32" )
+    for i in range(100000):
+      g1,g2 , image = generate_galaxy()
+      label = np.array([g1,g2]).astype("float32")
 
-      yield '%d'%i, {'image': image,
+
+      yield '%d'%i, {'image': image.astype("float32"),
                      'label': label }

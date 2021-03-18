@@ -1,17 +1,17 @@
-"""tengu dataset."""
+"""InverseCat dataset."""
 from astropy.table import Table
 import tensorflow_datasets as tfds
 import tensorflow as tf
 import numpy as np
 import galsim
-from galaxies import exp_model, draw_gal_noise
+from galaxies import draw_gal_noise
 _DESCRIPTION = "Tensorflow-GalSim Universe: Toy Galaxies for simple proofs-of-concepts."
 _CITATION = "{NEEDED}"
 _URL = "https://github.com/andrevitorelli/TenGU/"
 
 
-class TenGU(tfds.core.GeneratorBasedBuilder):
-  """Simple Galaxy Image Generator for Tensorflow Operations."""
+class InverseCat(tfds.core.GeneratorBasedBuilder):
+  """Simple Galaxy Image Generator from Catalogue for Tensorflow Operations."""
 
   VERSION = tfds.core.Version('0.0.0')
   RELEASE_NOTES = {'0.0.0': "Initial code."}
