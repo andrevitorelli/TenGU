@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import galsim
 from galaxies import generate_galaxy
-_DESCRIPTION = "Tensorflow-GalSim Universe: Toy Galaxies for simple proofs-of-concepts."
+_DESCRIPTION = "This tfds generates random galaxy stamps."
 _CITATION = "{NEEDED}"
 _URL = "https://github.com/andrevitorelli/TenGU/"
 
@@ -12,8 +12,8 @@ _URL = "https://github.com/andrevitorelli/TenGU/"
 class GalGen(tfds.core.GeneratorBasedBuilder):
   """Random galaxy image generator."""
 
-  VERSION = tfds.core.Version('0.0.0')
-  RELEASE_NOTES = {'0.0.0': "Initial code."}
+  VERSION = tfds.core.Version('0.0.1')
+  RELEASE_NOTES = {'0.0.1': "Basic functionalities."}
 
   def _info(self):
     return tfds.core.DatasetInfo(
@@ -35,6 +35,7 @@ class GalGen(tfds.core.GeneratorBasedBuilder):
   def _generate_examples(self):
     """Yields examples."""
     for i in range(100000):
+      np.random.seed(31415)
       g1,g2 , image = generate_galaxy()
       label = np.array([g1,g2]).astype("float32")
 

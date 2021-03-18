@@ -3,21 +3,17 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import galsim
 # TODO(galsim_cosmos): Markdown description  that will appear on the catalog page.
-_DESCRIPTION = """
-I HATE TFDS
-"""
+_DESCRIPTION = """This is a tf dataset wrapper for the COSMOS Training Sample 25.2 from GalSim."""
 
 # TODO(galsim_cosmos): BibTeX citation
-_CITATION = """{needed}
-"""
+_CITATION = """{needed}"""
 
-
-class COSMOSDataset(tfds.core.GeneratorBasedBuilder):
+class GalSimCOSMOS(tfds.core.GeneratorBasedBuilder):
   """DatasetBuilder for galsim_cosmos dataset."""
 
-  VERSION = tfds.core.Version('1.0.0')
+  VERSION = tfds.core.Version('0.0.1')
   RELEASE_NOTES = {
-      '1.0.0': 'Initial release.',
+      '0.0.1': 'Basic functionalities.',
   }
 
   def _info(self) -> tfds.core.DatasetInfo:
@@ -44,17 +40,14 @@ class COSMOSDataset(tfds.core.GeneratorBasedBuilder):
     path = dl_manager.download_and_extract('https://zenodo.org/record/3242143/files/COSMOS_25.2_training_sample.tar.gz')
     cat = galsim.COSMOSCatalog(dir= path / 'COSMOS_25.2_training_sample')
     # TODO(galsim_cosmos): Returns the Dict[split names, Iterator[Key, Example]]
-    return {
-        'train': self._generate_examples(cat),
-    }
+    return {tfds.Split.TRAIN: self._generate_examples(cat)}
 
   def _generate_examples(self, data):
     """Yields examples."""
     # TODO(galsim_cosmos): Yields (key, example) tuples from the dataset
     for i in range(len(data)):
       gal = data.makeGalaxy(i)
-      galint=galsim.InterpolatedImage(gal.original_gal.image,
-                                      x_interpolant='lanczos4')
-      image = gal.drawImage(nx=50,ny=50).array
-      image = image.astype("float32")
+      galxpsf = galsim.Convolve([gal,gal.original_psf])
+      image = galxpsf.drawImage(nx=50,ny=50).array.astype("float32")
+
       yield '%d'%i, {'image': image}

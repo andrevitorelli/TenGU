@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 import galsim
 from galaxies import draw_gal_noise
-_DESCRIPTION = "Tensorflow-GalSim Universe: Toy Galaxies for simple proofs-of-concepts."
+_DESCRIPTION = "This tfds uses a simple fits table to create galaxy stamps."
 _CITATION = "{NEEDED}"
 _URL = "https://github.com/andrevitorelli/TenGU/"
 
@@ -13,7 +13,7 @@ _URL = "https://github.com/andrevitorelli/TenGU/"
 class InverseCat(tfds.core.GeneratorBasedBuilder):
   """Simple Galaxy Image Generator from Catalogue for Tensorflow Operations."""
 
-  VERSION = tfds.core.Version('0.0.0')
+  VERSION = tfds.core.Version('0.0.0')Tensorflow-GalSim Universe: Toy Galaxies for simple proofs-of-concepts.
   RELEASE_NOTES = {'0.0.0': "Initial code."}
 
   def _info(self):
