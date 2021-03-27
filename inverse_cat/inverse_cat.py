@@ -13,7 +13,7 @@ _URL = "https://github.com/andrevitorelli/TenGU/"
 class InverseCat(tfds.core.GeneratorBasedBuilder):
   """Simple Galaxy Image Generator from Catalogue for Tensorflow Operations."""
 
-  VERSION = tfds.core.Version('0.0.0')Tensorflow-GalSim Universe: Toy Galaxies for simple proofs-of-concepts.
+  VERSION = tfds.core.Version('0.0.0')
   RELEASE_NOTES = {'0.0.0': "Initial code."}
 
   def _info(self):
@@ -23,7 +23,7 @@ class InverseCat(tfds.core.GeneratorBasedBuilder):
       description=_DESCRIPTION,
       homepage=_URL,
       features=tfds.features.FeaturesDict({
-          'image': tfds.features.Tensor(shape=[50,50], dtype=tf.float32),
+          'image': tfds.features.Tensor(shape=[50,50,1], dtype=tf.float32),
           'label': tfds.features.Tensor(shape=[2], dtype=tf.float32)
           }),
       supervised_keys=("image","label"),
@@ -40,6 +40,7 @@ class InverseCat(tfds.core.GeneratorBasedBuilder):
     """Yields examples."""
     for i, galaxy in enumerate(data):
       image = draw_gal_noise(galaxy,None).astype("float32")
+      image.shape = (50,50,1)
       label = np.array([galaxy['g1'], galaxy['g2']],dtype="float32" )
 
       yield '%d'%i, {'image': image,
