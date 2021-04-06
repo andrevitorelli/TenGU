@@ -39,7 +39,7 @@ class InverseCat(tfds.core.GeneratorBasedBuilder):
   def _generate_examples(self, data):
     """Yields examples."""
     for i, galaxy in enumerate(data):
-      image = draw_gal_noise(galaxy,None).astype("float32")
+      image = draw_gal_noise(galaxy).astype("float32")
       image.shape = (50,50,1)
       label = np.array([galaxy['g1'], galaxy['g2']],dtype="float32" )
 
